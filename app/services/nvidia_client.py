@@ -19,11 +19,11 @@ if TYPE_CHECKING:
 _INVOKE_URL = "https://integrate.api.nvidia.com/v1/chat/completions"
 
 
-def _get_client(settings: Settings | None = None) -> AsyncOpenAI:
+def _get_text_client(settings: Settings | None = None) -> AsyncOpenAI:
     settings = settings or get_settings()
     return AsyncOpenAI(
         base_url=settings.nvidia_base_url,
-        api_key=settings.nvidia_api_key,
+        api_key=settings.nvidia_text_api_key,
     )
 
 
@@ -54,7 +54,7 @@ async def vision_chat(
     data_uri = await _encode_upload(image_file)
 
     headers = {
-        "Authorization": f"Bearer {settings.nvidia_api_key}",
+        "Authorization": f"Bearer {settings.nvidia_vision_api_key}",
         "Accept": "text/event-stream",
     }
 
@@ -106,7 +106,7 @@ async def text_chat(
 ) -> str:
     """Send a text-only prompt to the text model (Nemotron-3-Super)."""
     settings = settings or get_settings()
-    client = _get_client(settings)
+    client = _get_text_client(settings)
 
     response = await client.chat.completions.create(
         model=settings.text_model,

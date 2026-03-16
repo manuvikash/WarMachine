@@ -3,7 +3,8 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    nvidia_api_key: str
+    nvidia_vision_api_key: str
+    nvidia_text_api_key: str
     nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
 
     vision_model: str = "mistralai/mistral-large-3-675b-instruct-2512"
