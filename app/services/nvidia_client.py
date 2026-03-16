@@ -1,11 +1,13 @@
-"""Thin wrapper around the OpenAI SDK pointed at NVIDIA NIM."""
+"""Thin wrapper around NVIDIA NIM API for vision and text models."""
 
 from __future__ import annotations
 
 import base64
 import io
+import json
 from typing import TYPE_CHECKING
 
+import httpx
 from openai import AsyncOpenAI
 from PIL import Image
 
@@ -13,6 +15,8 @@ from app.config import Settings, get_settings
 
 if TYPE_CHECKING:
     from fastapi import UploadFile
+
+_INVOKE_URL = "https://integrate.api.nvidia.com/v1/chat/completions"
 
 
 def _get_client(settings: Settings | None = None) -> AsyncOpenAI:
@@ -43,16 +47,20 @@ async def vision_chat(
     *,
     settings: Settings | None = None,
     max_tokens: int = 2048,
-    temperature: float = 0.2,
+    temperature: float = 0.15,
 ) -> str:
-    """Send an image + text prompt to the vision model (Cosmos-Reason2-8B)."""
+    """Send an image + text to the vision model via raw HTTP (streaming)."""
     settings = settings or get_settings()
-    client = _get_client(settings)
     data_uri = await _encode_upload(image_file)
 
-    response = await client.chat.completions.create(
-        model=settings.vision_model,
-        messages=[
+    headers = {
+        "Authorization": f"Bearer {settings.nvidia_api_key}",
+        "Accept": "text/event-stream",
+    }
+
+    payload = {
+        "model": settings.vision_model,
+        "messages": [
             {"role": "system", "content": system_prompt},
             {
                 "role": "user",
@@ -62,10 +70,30 @@ async def vision_chat(
                 ],
             },
         ],
-        max_tokens=max_tokens,
-        temperature=temperature,
-    )
-    return response.choices[0].message.content or ""
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+        "top_p": 1.00,
+        "frequency_penalty": 0.00,
+        "presence_penalty": 0.00,
+        "stream": True,
+    }
+
+    collected: list[str] = []
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        async with client.stream("POST", _INVOKE_URL, headers=headers, json=payload) as resp:
+            resp.raise_for_status()
+            async for line in resp.aiter_lines():
+                if not line or not line.startswith("data: "):
+                    continue
+                data = line.removeprefix("data: ").strip()
+                if data == "[DONE]":
+                    break
+                chunk = json.loads(data)
+                delta = chunk["choices"][0].get("delta", {})
+                if content := delta.get("content"):
+                    collected.append(content)
+
+    return "".join(collected)
 
 
 async def text_chat(

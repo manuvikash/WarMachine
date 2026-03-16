@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     nvidia_api_key: str
     nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
 
-    vision_model: str = "nvidia/cosmos-reason2-8b"
+    vision_model: str = "mistralai/mistral-large-3-675b-instruct-2512"
     text_model: str = "nvidia/nemotron-3-super-120b-a12b"
 
     chroma_persist_dir: str = "./chroma_db"
