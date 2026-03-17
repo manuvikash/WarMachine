@@ -1,0 +1,9 @@
+# GitHub Personal Access Token for Meta DAT SDK
+gpr.user=your-github-username
+github_token=your-github-pat
+
+# Backend server URL
+server.url=http://10.0.2.2:8000
+
+# Mapbox access token
+mapbox.token=your-mapbox-token

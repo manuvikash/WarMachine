@@ -1,0 +1,4 @@
+-keep class com.meta.wearable.** { *; }
+-dontwarn com.meta.wearable.**
+-keep class com.mapbox.** { *; }
+-dontwarn com.mapbox.**
