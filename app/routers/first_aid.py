@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
+from app.history import add_entry, save_image
 from app.models.schemas import FirstAidResponse
 from app.services.nvidia_client import generate_tts_summary, vision_chat
 from app.services.prompts import FIRST_AID_SYSTEM, FIRST_AID_USER
@@ -21,6 +22,10 @@ async def analyse_first_aid(image: UploadFile = File(...)):
             detail=f"Unsupported image type '{image.content_type}'. Use JPEG, PNG, or WebP.",
         )
 
+    img_filename = await save_image(image)
     raw = await vision_chat(image, FIRST_AID_SYSTEM, FIRST_AID_USER)
     tts = await generate_tts_summary(raw)
+
+    add_entry(entry_type="First Aid", image_filename=img_filename, response=raw, tts_summary=tts)
+
     return FirstAidResponse(response=raw, tts_summary=tts)

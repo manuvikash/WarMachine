@@ -1,16 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ImageUploadPanel from "./components/ImageUploadPanel";
 import SurvivalPanel from "./components/SurvivalPanel";
-import { postFirstAid, postHazard } from "./api";
+import HistoryPanel from "./components/HistoryPanel";
+import { postFirstAid, postHazard, fetchHistory } from "./api";
 
 const TABS = [
   { id: "first-aid", label: "First Aid" },
   { id: "hazard", label: "Hazard Detection" },
   { id: "survival", label: "Survival RAG" },
+  { id: "history", label: "History" },
 ];
 
 function App() {
   const [tab, setTab] = useState("first-aid");
+  const [history, setHistory] = useState([]);
+
+  useEffect(() => {
+    fetchHistory().then(setHistory).catch(() => {});
+  }, []);
+
+  const addToHistory = (entry) => {
+    const newEntry = {
+      ...entry,
+      id: Date.now(),
+      time: new Date().toLocaleString(),
+    };
+    setHistory((prev) => [newEntry, ...prev]);
+  };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -43,6 +59,11 @@ function App() {
               }`}
             >
               {t.label}
+              {t.id === "history" && history.length > 0 && (
+                <span className="ml-1.5 text-[10px] bg-zinc-700 text-zinc-300 px-1.5 py-0.5 rounded-full">
+                  {history.length}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -55,6 +76,9 @@ function App() {
             title="First Aid Analysis"
             description="Upload an image of an injury to receive first-aid guidance"
             apiFn={postFirstAid}
+            onResult={(image, data) =>
+              addToHistory({ type: "First Aid", image, response: data.response, tts: data.tts_summary })
+            }
           />
         )}
         {tab === "hazard" && (
@@ -62,9 +86,19 @@ function App() {
             title="Hazard Detection"
             description="Upload an image of a scene to detect hazards and assess risk"
             apiFn={postHazard}
+            onResult={(image, data) =>
+              addToHistory({ type: "Hazard Detection", image, response: data.response, tts: data.tts_summary })
+            }
           />
         )}
-        {tab === "survival" && <SurvivalPanel />}
+        {tab === "survival" && (
+          <SurvivalPanel
+            onResult={(query, data) =>
+              addToHistory({ type: "Survival RAG", query, response: data.answer, tts: data.tts_summary })
+            }
+          />
+        )}
+        {tab === "history" && <HistoryPanel history={history} />}
       </main>
     </div>
   );

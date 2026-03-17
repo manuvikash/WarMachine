@@ -17,7 +17,7 @@ export default function SpeakButton({ text }) {
       try {
         await speak(text);
       } catch (err) {
-        setError("TTS failed");
+        setError(err.message || "TTS failed");
       } finally {
         setPlaying(false);
       }

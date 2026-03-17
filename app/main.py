@@ -4,8 +4,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
+from app.history import get_all as get_history, IMAGES_DIR
 from app.models.schemas import HealthResponse
 from app.rag.vector_store import ingest_documents
 from app.routers import first_aid, hazard, survival_rag
@@ -44,6 +46,15 @@ app.add_middleware(
 app.include_router(first_aid.router)
 app.include_router(hazard.router)
 app.include_router(survival_rag.router)
+
+
+IMAGES_DIR.mkdir(exist_ok=True)
+app.mount("/images", StaticFiles(directory=str(IMAGES_DIR)), name="images")
+
+
+@app.get("/history", tags=["History"])
+async def list_history():
+    return get_history()
 
 
 @app.get("/health", response_model=HealthResponse, tags=["Health"])

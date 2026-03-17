@@ -2,7 +2,7 @@ import { useState } from "react";
 import { postSurvival } from "../api";
 import SpeakButton from "./SpeakButton";
 
-export default function SurvivalPanel() {
+export default function SurvivalPanel({ onResult }) {
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -17,6 +17,7 @@ export default function SurvivalPanel() {
     try {
       const data = await postSurvival(question.trim());
       setResult(data);
+      onResult?.(question.trim(), data);
     } catch (err) {
       setError(err.message || "Request failed");
     } finally {

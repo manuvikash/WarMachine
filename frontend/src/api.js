@@ -25,3 +25,18 @@ export async function postSurvival(question) {
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
+
+export async function fetchHistory() {
+  const res = await fetch(`${API}/history`);
+  if (!res.ok) return [];
+  const entries = await res.json();
+  return entries.map((e) => ({
+    id: e.id,
+    type: e.type,
+    image: e.image ? `${API}/images/${e.image}` : null,
+    query: e.query || null,
+    response: e.response,
+    tts: e.tts_summary || e.response,
+    time: new Date(e.timestamp).toLocaleString(),
+  }));
+}

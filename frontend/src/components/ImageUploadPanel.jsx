@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import SpeakButton from "./SpeakButton";
 
-export default function ImageUploadPanel({ title, description, apiFn }) {
+export default function ImageUploadPanel({ title, description, apiFn, onResult }) {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -30,6 +30,7 @@ export default function ImageUploadPanel({ title, description, apiFn }) {
     try {
       const data = await apiFn(file);
       setResult(data);
+      onResult?.(preview, data);
     } catch (err) {
       setError(err.message || "Request failed");
     } finally {
