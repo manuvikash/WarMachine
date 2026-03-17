@@ -7,7 +7,7 @@ from fastapi import APIRouter
 from app.config import get_settings
 from app.models.schemas import RetrievedChunk, SurvivalQuery, SurvivalRAGResponse
 from app.rag.vector_store import query as vector_query
-from app.services.nvidia_client import text_chat
+from app.services.nvidia_client import generate_tts_summary, text_chat
 from app.services.prompts import SURVIVAL_RAG_SYSTEM
 
 router = APIRouter(prefix="/survival", tags=["Survival RAG"])
@@ -36,8 +36,11 @@ async def ask_survival(body: SurvivalQuery):
         for c in retrieved
     ]
 
+    tts_summary = await generate_tts_summary(raw)
+
     return SurvivalRAGResponse(
         answer=raw,
         sources=sources,
         raw_llm_response=raw,
+        tts_summary=tts_summary,
     )

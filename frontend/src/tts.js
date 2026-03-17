@@ -4,16 +4,13 @@ const VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"; // "George" — clear male narration vo
 let currentAudio = null;
 let objectUrl = null;
 
-export function hasElevenLabs() {
-  return !!ELEVENLABS_API_KEY && ELEVENLABS_API_KEY !== "your-elevenlabs-api-key-here";
-}
-
 export async function speak(text) {
   stop();
 
-  if (!hasElevenLabs()) {
-    console.warn("VITE_ELEVENLABS_API_KEY not set — cannot use TTS");
-    throw new Error("ElevenLabs API key not configured");
+  if (!ELEVENLABS_API_KEY) {
+    throw new Error(
+      "VITE_ELEVENLABS_API_KEY not set. Add it to your root .env file."
+    );
   }
 
   const res = await fetch(
@@ -40,7 +37,7 @@ export async function speak(text) {
   if (!res.ok) {
     const errBody = await res.text();
     console.error("ElevenLabs TTS error:", errBody);
-    throw new Error("ElevenLabs TTS request failed");
+    throw new Error(`ElevenLabs TTS failed: ${res.status}`);
   }
 
   const blob = await res.blob();

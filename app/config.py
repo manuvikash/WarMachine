@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     max_image_size_mb: int = 20
     max_rag_results: int = 5
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 @lru_cache

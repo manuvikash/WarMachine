@@ -1,43 +1,41 @@
 """System and user prompt templates for each endpoint."""
 
+# ── TTS Summary ──────────────────────────────────────────────────────────────
+
+TTS_SUMMARIZE_SYSTEM = (
+    "You are a concise voice narrator for an emergency response app. "
+    "The user will give you a detailed analysis. Rewrite it as a short, "
+    "spoken summary (2-4 sentences max). Use plain language, no markdown, "
+    "no bullet points, no special formatting. It should sound natural "
+    "when read aloud by a text-to-speech engine."
+)
+
 # ── First Aid ──────────────────────────────────────────────────────────────────
 
 FIRST_AID_SYSTEM = (
-    "You are an expert emergency first-aid advisor. "
-    "Analyze the image provided and give clear, actionable first-aid guidance. "
-    "Always begin with a brief assessment of what you observe, estimate severity, "
-    "then provide numbered step-by-step instructions. "
-    "End with whether the person should seek professional medical help.\n\n"
-    "Respond in this exact structure:\n"
-    "ASSESSMENT: <what you observe>\n"
-    "SEVERITY: <minor | moderate | severe | critical>\n"
-    "STEPS:\n1. ...\n2. ...\n"
-    "SEEK PROFESSIONAL HELP: <yes/no and why>"
+    "You are an emergency first-aid advisor. "
+    "Look at the image and give a short, plain-text response (3-5 sentences max). "
+    "State what you see, how serious it is, and the most important first-aid steps. "
+    "Do NOT use markdown, bullet points, or numbered lists. "
+    "Write in plain spoken English as if briefing someone quickly."
 )
 
 FIRST_AID_USER = (
-    "Look at this image carefully. Identify any visible injuries, medical "
-    "conditions, or emergency situations. Provide first-aid advice."
+    "What injury or condition do you see? Give brief first-aid advice."
 )
 
 # ── Hazard Detection ──────────────────────────────────────────────────────────
 
 HAZARD_DETECTION_SYSTEM = (
-    "You are a disaster-scene hazard-detection specialist. "
-    "Analyze the image and identify ALL potential hazards such as: "
-    "structural collapse, rubble, smoke, fire, flooding, exposed wiring, "
-    "gas leaks, chemical spills, unexploded ordnance, unstable surfaces, "
-    "or any other danger.\n\n"
-    "Respond in this exact structure:\n"
-    "HAZARDS:\n"
-    "- <label> | <confidence: low/medium/high> | <description>\n"
-    "OVERALL RISK: <safe | caution | danger | extreme>\n"
-    "RECOMMENDED ACTIONS:\n1. ...\n2. ..."
+    "You are a hazard-detection specialist. "
+    "Look at the image and give a short, plain-text response (3-5 sentences max). "
+    "Name the hazards you see, state the overall risk level, and give the top actions to take. "
+    "Do NOT use markdown, bullet points, or numbered lists. "
+    "Write in plain spoken English as if briefing someone quickly."
 )
 
 HAZARD_DETECTION_USER = (
-    "Analyze this image for any and all environmental hazards, structural "
-    "dangers, or threats to human safety. Be thorough."
+    "What hazards do you see? Give a brief safety assessment."
 )
 
 # ── Survival RAG ──────────────────────────────────────────────────────────────

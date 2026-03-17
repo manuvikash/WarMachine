@@ -1,6 +1,4 @@
 import { useState } from "react";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { postSurvival } from "../api";
 import SpeakButton from "./SpeakButton";
 
@@ -25,6 +23,8 @@ export default function SurvivalPanel() {
       setLoading(false);
     }
   };
+
+  const speakText = result?.tts_summary || result?.answer || "";
 
   return (
     <div className="space-y-5">
@@ -67,13 +67,8 @@ export default function SurvivalPanel() {
 
       {result && (
         <div className="bg-zinc-800 rounded-xl p-5 space-y-4 text-left">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-zinc-300 uppercase tracking-wide">Answer</h3>
-            <SpeakButton text={result.answer} />
-          </div>
-          <div className="prose prose-sm prose-invert max-w-none prose-headings:text-zinc-200 prose-strong:text-zinc-100 prose-li:text-zinc-300 prose-p:text-zinc-300">
-            <Markdown remarkPlugins={[remarkGfm]}>{result.answer}</Markdown>
-          </div>
+          <p className="text-sm text-zinc-200 leading-relaxed">{result.answer}</p>
+          <SpeakButton text={speakText} />
 
           {result.sources?.length > 0 && (
             <div className="border-t border-zinc-700 pt-3 mt-3">

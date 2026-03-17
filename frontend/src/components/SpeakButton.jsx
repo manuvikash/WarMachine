@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { speak, stop, hasElevenLabs } from "../tts";
+import { speak, stop } from "../tts";
 
 export default function SpeakButton({ text }) {
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState(null);
 
-  if (!text || !hasElevenLabs()) return null;
+  if (!text) return null;
 
   const toggle = async () => {
     if (playing) {

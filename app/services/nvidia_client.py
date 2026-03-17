@@ -12,6 +12,7 @@ from openai import AsyncOpenAI
 from PIL import Image
 
 from app.config import Settings, get_settings
+from app.services.prompts import TTS_SUMMARIZE_SYSTEM
 
 if TYPE_CHECKING:
     from fastapi import UploadFile
@@ -121,3 +122,19 @@ async def text_chat(
         temperature=temperature,
     )
     return response.choices[0].message.content or ""
+
+
+async def generate_tts_summary(detailed_response: str, *, settings: Settings | None = None) -> str:
+    """Generate a short, spoken-friendly summary of a detailed LLM response."""
+    try:
+        summary = await text_chat(
+            TTS_SUMMARIZE_SYSTEM,
+            f"Summarize this for voice narration:\n\n{detailed_response}",
+            settings=settings,
+            max_tokens=256,
+            temperature=0.3,
+        )
+        return summary.strip()
+    except Exception as e:
+        print(f"[tts_summary] Failed to generate summary: {e}")
+        return ""

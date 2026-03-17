@@ -1,6 +1,4 @@
 import { useState, useRef } from "react";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import SpeakButton from "./SpeakButton";
 
 export default function ImageUploadPanel({ title, description, apiFn }) {
@@ -39,7 +37,7 @@ export default function ImageUploadPanel({ title, description, apiFn }) {
     }
   };
 
-  const speakText = result?.raw_llm_response || "";
+  const speakText = result?.tts_summary || result?.response || "";
 
   return (
     <div className="space-y-5">
@@ -55,15 +53,15 @@ export default function ImageUploadPanel({ title, description, apiFn }) {
         onClick={() => inputRef.current?.click()}
         className="border-2 border-dashed border-zinc-600 hover:border-indigo-500 rounded-xl p-8 text-center cursor-pointer transition-colors"
       >
-        {preview ? (
+        {preview && !result ? (
           <img src={preview} alt="preview" className="mx-auto max-h-64 rounded-lg" />
-        ) : (
+        ) : !preview ? (
           <div className="text-zinc-400">
             <svg className="mx-auto w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 16v-8m0 0l-3 3m3-3l3 3M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1" /></svg>
             <p className="text-sm">Drop an image here or click to upload</p>
             <p className="text-xs text-zinc-500 mt-1">JPEG, PNG, WebP</p>
           </div>
-        )}
+        ) : null}
         <input
           ref={inputRef}
           type="file"
@@ -74,20 +72,22 @@ export default function ImageUploadPanel({ title, description, apiFn }) {
       </div>
 
       {/* Submit */}
-      <button
-        onClick={submit}
-        disabled={!file || loading}
-        className="w-full py-2.5 rounded-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-      >
-        {loading ? (
-          <span className="inline-flex items-center gap-2">
-            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
-            Analyzing…
-          </span>
-        ) : (
-          "Analyze Image"
-        )}
-      </button>
+      {!result && (
+        <button
+          onClick={submit}
+          disabled={!file || loading}
+          className="w-full py-2.5 rounded-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+        >
+          {loading ? (
+            <span className="inline-flex items-center gap-2">
+              <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+              Analyzing…
+            </span>
+          ) : (
+            "Analyze Image"
+          )}
+        </button>
+      )}
 
       {/* Error */}
       {error && (
@@ -96,16 +96,24 @@ export default function ImageUploadPanel({ title, description, apiFn }) {
         </div>
       )}
 
-      {/* Result */}
+      {/* Result — image + response side by side */}
       {result && (
-        <div className="bg-zinc-800 rounded-xl p-5 space-y-4 text-left">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-zinc-300 uppercase tracking-wide">Result</h3>
-            <SpeakButton text={speakText} />
+        <div className="bg-zinc-800 rounded-xl p-5 space-y-4">
+          <div className="flex flex-col md:flex-row gap-5">
+            {preview && (
+              <img src={preview} alt="uploaded" className="rounded-lg max-h-56 object-contain md:w-1/3 shrink-0" />
+            )}
+            <div className="flex-1 space-y-3">
+              <p className="text-sm text-zinc-200 leading-relaxed">{result.response}</p>
+              <SpeakButton text={speakText} />
+            </div>
           </div>
-          <div className="prose prose-sm prose-invert max-w-none prose-headings:text-zinc-200 prose-strong:text-zinc-100 prose-li:text-zinc-300 prose-p:text-zinc-300">
-            <Markdown remarkPlugins={[remarkGfm]}>{result.raw_llm_response}</Markdown>
-          </div>
+          <button
+            onClick={() => { setResult(null); setFile(null); setPreview(null); }}
+            className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+          >
+            ← Analyze another image
+          </button>
         </div>
       )}
     </div>
