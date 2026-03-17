@@ -89,7 +89,10 @@ async def vision_chat(
                 if data == "[DONE]":
                     break
                 chunk = json.loads(data)
-                delta = chunk["choices"][0].get("delta", {})
+                choices = chunk.get("choices", [])
+                if not choices:
+                    continue
+                delta = choices[0].get("delta", {})
                 if content := delta.get("content"):
                     collected.append(content)
 

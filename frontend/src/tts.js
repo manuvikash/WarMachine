@@ -1,0 +1,76 @@
+const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
+const VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"; // "George" — clear male narration voice
+
+let currentAudio = null;
+let objectUrl = null;
+
+export function hasElevenLabs() {
+  return !!ELEVENLABS_API_KEY && ELEVENLABS_API_KEY !== "your-elevenlabs-api-key-here";
+}
+
+export async function speak(text) {
+  stop();
+
+  if (!hasElevenLabs()) {
+    console.warn("VITE_ELEVENLABS_API_KEY not set — cannot use TTS");
+    throw new Error("ElevenLabs API key not configured");
+  }
+
+  const res = await fetch(
+    `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}/stream`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "xi-api-key": ELEVENLABS_API_KEY,
+      },
+      body: JSON.stringify({
+        text,
+        model_id: "eleven_multilingual_v2",
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.75,
+          style: 0.0,
+          use_speaker_boost: true,
+        },
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    const errBody = await res.text();
+    console.error("ElevenLabs TTS error:", errBody);
+    throw new Error("ElevenLabs TTS request failed");
+  }
+
+  const blob = await res.blob();
+  objectUrl = URL.createObjectURL(blob);
+  currentAudio = new Audio(objectUrl);
+
+  return new Promise((resolve) => {
+    currentAudio.onended = () => {
+      _cleanup();
+      resolve();
+    };
+    currentAudio.onerror = () => {
+      _cleanup();
+      resolve();
+    };
+    currentAudio.play();
+  });
+}
+
+function _cleanup() {
+  if (objectUrl) {
+    URL.revokeObjectURL(objectUrl);
+    objectUrl = null;
+  }
+  currentAudio = null;
+}
+
+export function stop() {
+  if (currentAudio) {
+    currentAudio.pause();
+    _cleanup();
+  }
+}
